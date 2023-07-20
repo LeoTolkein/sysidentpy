@@ -14,7 +14,7 @@ import numpy as np
 
 from sysidentpy.utils._check_arrays import _check_positive_int, _num_features
 
-from ..basis_function import Fourier, Polynomial
+from ..basis_function import *
 from ..narmax_base import BaseMSS, Orthogonalization
 from ..parameter_estimation.estimators import Estimators
 from ..utils.deprecation import deprecated
@@ -166,7 +166,7 @@ class FROLS(Estimators, BaseMSS):
         eps: np.float64 = np.finfo(np.float64).eps,
         gama: float = 0.2,
         weight: float = 0.02,
-        basis_function: Union[Polynomial, Fourier] = Polynomial(),
+        basis_function: Union[Polynomial, Fourier, Radial] = Polynomial(),
         model_type: str = "NARMAX",
     ):
         self.non_degree = basis_function.degree

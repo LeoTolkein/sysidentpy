@@ -7,6 +7,8 @@ import numpy as np
 
 from .basis_function_base import BaseBasisFunction
 
+_SUPPORTED_RBF_TYPES = ["gaussian",]
+_SUPPORTED_RBF_NORM = [1, 2,]
 
 class Polynomial(BaseBasisFunction):
     r"""Build polynomial basis function.
@@ -182,6 +184,73 @@ class Fourier:
             return psi, self.ensemble
 
         return psi[:, predefined_regressors], self.ensemble
+
+    def transform(
+        self,
+        data: np.ndarray,
+        max_lag: int = 1,
+        predefined_regressors: Union[np.ndarray, None] = None,
+    ):
+        return self.fit(data, max_lag, predefined_regressors)
+
+
+class Radial(BaseBasisFunction):
+    r"""Build radial basis function, a.k.a. RBF
+
+    Parameters
+    ----------
+    degree : int (max_degree), default=2
+        The maximum degree of the polynomial features.
+
+    Notes
+    -----
+    Be aware that the number of features in the output array scales
+    significantly as the number of inputs, the max lag of the input and output, and
+    degree increases. High degrees can cause overfitting.
+
+    """
+
+    def __init__(
+        self,
+        type: str = "gaussian",     # * Assuming Gaussian RBF
+        norm: int = 2,              # * Assuming Euclidean norm
+        degree=1,
+    ):
+        _min_deg = 1
+        if degree < _min_deg:
+            raise ValueError(f"degree must be no less than {_min_deg} (currently {degree}))!")
+        if type not in _SUPPORTED_RBF_TYPES:
+            raise TypeError(f"Unsupported RBF type {type}! Currently type can only be within {_SUPPORTED_RBF_TYPES}.")
+        if norm not in _SUPPORTED_RBF_NORM:
+            raise TypeError(f"Unsupported RBF norm {norm}! Currently norm can only be within {_SUPPORTED_RBF_NORM}.")
+        self.type = type
+        self.norm = norm
+        self.degree = degree
+
+    def fit(
+        self,
+        data: np.ndarray,
+        max_lag: int = 1,
+        predefined_regressors: Union[np.ndarray, None] = None,
+    ):
+        """Build the Polynomial information matrix.
+        """
+        # Create combinations of all columns based on its index
+        iterable_list = range(data.shape[1])
+        combinations = list(combinations_with_replacement(iterable_list, self.degree))
+        if predefined_regressors is not None:
+            combinations = [combinations[index] for index in predefined_regressors]
+
+        psi = np.column_stack(
+            [
+                np.prod(data[:, combinations[i]], axis=1)
+                for i in range(len(combinations))
+            ]
+        )
+        psi = psi[max_lag:, :]
+
+        # * return None to satisfy the requirement for other methods.
+        return psi, None
 
     def transform(
         self,

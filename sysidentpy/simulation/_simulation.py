@@ -8,7 +8,7 @@ from typing import Union
 
 import numpy as np
 
-from ..basis_function import Fourier, Polynomial
+from ..basis_function import *
 from ..narmax_base import BaseMSS, Orthogonalization
 from ..parameter_estimation.estimators import Estimators
 from ..utils._check_arrays import _check_positive_int, _num_features
@@ -124,7 +124,7 @@ class SimulateNARMAX(Estimators, BaseMSS):
         estimate_parameter: bool = True,
         calculate_err: bool = False,
         model_type: str = "NARMAX",
-        basis_function: Union[Polynomial, Fourier] = Polynomial(),
+        basis_function: Union[Polynomial, Fourier, Radial] = Polynomial(),
     ):
         super().__init__(
             lam=lam,
